@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}My Borrowings - Library Management System{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4"><i class="fas fa-hand-holding"></i> My Borrowings</h1>
+
+    {% if borrowings %}
+    <div class="table-responsive">
+        <table class="table table-hover shadow-sm">
+            <thead class="table-dark">
+                <tr>
+                    <th>Book</th>
+                    <th>Borrowed Date</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                    <th>Returned Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for borrowing in borrowings %}
+                <tr>
+                    <td>
+                        <a href="{% url 'book_detail' borrowing.book.pk %}">{{ borrowing.book.title }}</a>
+                    </td>
+                    <td>{{ borrowing.borrowed_date|date:"M d, Y" }}</td>
+                    <td>
+                        {{ borrowing.due_date }}
+                        {% if borrowing.status == 'borrowed' and borrowing.due_date < today %}
+                        <span class="badge bg-danger">Overdue</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge 
+                            {% if borrowing.status == 'borrowed' %}bg-primary
+                            {% elif borrowing.status == 'returned' %}bg-success
+                            {% else %}bg-danger{% endif %}">
+                            {{ borrowing.get_status_display }}
+                        </span>
+                    </td>
+                    <td>{{ borrowing.returned_date|default:"-" }}</td>
+                    <td>
+                        {% if borrowing.status == 'borrowed' %}
+                        <a href="{% url 'return_book' borrowing.pk %}" class="btn btn-success btn-sm">
+                            <i class="fas fa-undo"></i> Return
+                        </a>
+                        {% else %}
+                        <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center">
+        <i class="fas fa-info-circle fa-2x mb-3"></i>
+        <h4>No borrowings yet</h4>
+        <p>You haven't borrowed any books. Browse our collection and borrow your first book!</p>
+        <a href="{% url 'book_list' %}" class="btn btn-primary">
+            <i class="fas fa-book"></i> Browse Books
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
