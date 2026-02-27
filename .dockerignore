@@ -1,0 +1,60 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.venv
+venv
+ENV
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Testing
+.coverage
+htmlcov
+.pytest_cache
+
+# Documentation
+*.md
+!README.md
+docs
+
+# Local files
+*.log
+*.sqlite3
+.env
+.env.*
+!.env.example
+
+# Media files (will be mounted as volumes)
+media/*
+!media/.gitkeep
+
+# Static files (will be collected)
+staticfiles/*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker
+Dockerfile*
+docker-compose*
+.docker
+
+# CI/CD
+.github
+
+# Misc
+tracker_for_ai.txt
+*.pdf
