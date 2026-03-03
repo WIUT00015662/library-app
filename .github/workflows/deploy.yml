@@ -6,7 +6,15 @@ on:
   pull_request:
     branches: [ main ]
 
+# GCP Configuration (no secrets needed for Workload Identity Federation)
 env:
+  GCP_PROJECT_ID: project-7a0a17e5-a822-473d-b4f
+  GCP_PROJECT_NUMBER: "429441277484"
+  GCP_POOL_ID: cool-id
+  GCP_PROVIDER_ID: github-provider
+  GCP_SERVICE_ACCOUNT: 429441277484-compute@developer.gserviceaccount.com
+  GCP_VM_NAME: instance-20260223-145202
+  GCP_ZONE: asia-southeast1-a
   DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/library-app
 
 jobs:
@@ -121,59 +129,76 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # Job 4: Deploy to Server
+  # Job 4: Deploy to GCP VM using Workload Identity Federation
   deploy:
     name: Deploy to Production
     runs-on: ubuntu-latest
     needs: build
     if: github.ref == 'refs/heads/main'
+    
+    # Required for Workload Identity Federation - GitHub provides OIDC token
+    permissions:
+      contents: read
+      id-token: write
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Deploy to server via SSH
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd /opt/library-app
-            
-            # Pull latest images
-            docker compose pull
-            
-            # Stop old containers gracefully
-            docker compose down --remove-orphans
-            
-            # Start new containers
-            docker compose up -d
-            
-            # Wait for services to be ready
-            sleep 10
-            
-            # Run database migrations
-            docker compose exec -T web python manage.py migrate --noinput
-            
-            # Collect static files
-            docker compose exec -T web python manage.py collectstatic --noinput
-            
-            # Clean up old images
-            docker image prune -f
-            
-            echo "Deployment completed successfully!"
+          # No secrets needed! Workload Identity Federation uses OIDC token
+          workload_identity_provider: projects/${{ env.GCP_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/${{ env.GCP_POOL_ID }}/providers/${{ env.GCP_PROVIDER_ID }}
+          service_account: ${{ env.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Deploy to GCP VM
+        run: |
+          gcloud compute ssh ${{ env.GCP_VM_NAME }} \
+            --zone=${{ env.GCP_ZONE }} \
+            --command='
+              cd /opt/library-app
+              
+              # Pull latest images
+              docker compose pull
+              
+              # Stop old containers gracefully
+              docker compose down --remove-orphans
+              
+              # Start new containers
+              docker compose up -d
+              
+              # Wait for services to be ready
+              sleep 10
+              
+              # Run database migrations
+              docker compose exec -T web python manage.py migrate --noinput
+              
+              # Collect static files
+              docker compose exec -T web python manage.py collectstatic --noinput
+              
+              # Clean up old images
+              docker image prune -f
+              
+              echo "Deployment completed successfully!"
+            '
 
       - name: Verify deployment
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            # Check if containers are running
-            docker compose -f /opt/library-app/docker-compose.yml ps
-            
-            # Health check
-            curl -f http://localhost/ || exit 1
-            
-            echo "Health check passed!"
+        run: |
+          gcloud compute ssh ${{ env.GCP_VM_NAME }} \
+            --zone=${{ env.GCP_ZONE }} \
+            --command='
+              # Check if containers are running
+              docker compose -f /opt/library-app/docker-compose.yml ps
+              
+              # Health check
+              curl -f http://localhost/ || exit 1
+              
+              echo "Health check passed!"
+            '
