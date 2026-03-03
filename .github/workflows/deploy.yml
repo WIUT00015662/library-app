@@ -162,6 +162,7 @@ jobs:
         run: |
           gcloud compute ssh ${{ env.GCP_VM_NAME }} \
             --zone=${{ env.GCP_ZONE }} \
+            --project=${{ env.GCP_PROJECT_ID }} \
             --command='
               cd /opt/library-app
               
@@ -193,6 +194,7 @@ jobs:
         run: |
           gcloud compute ssh ${{ env.GCP_VM_NAME }} \
             --zone=${{ env.GCP_ZONE }} \
+            --project=${{ env.GCP_PROJECT_ID }} \
             --command='
               # Check if containers are running
               docker compose -f /opt/library-app/docker-compose.yml ps
