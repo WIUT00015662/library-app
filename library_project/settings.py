@@ -157,3 +157,14 @@ if not DEBUG:
     X_FRAME_OPTIONS = "DENY"
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = True
+
+# CSRF trusted origins (required for HTTPS behind reverse proxy)
+CSRF_TRUSTED_ORIGINS = [
+    "https://experimentalapp.app",
+    "https://www.experimentalapp.app",
+    "http://localhost",
+    "http://127.0.0.1",
+]
+
+# Trust X-Forwarded-Proto header from Nginx
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
