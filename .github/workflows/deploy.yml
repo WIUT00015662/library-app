@@ -166,7 +166,10 @@ jobs:
             --command='
               cd /opt/library-app
               
-              # Pull latest images
+              # Pull latest code (for nginx config, docker-compose, etc.)
+              git pull origin main
+              
+              # Pull latest Docker images
               docker compose pull
               
               # Stop old containers gracefully
