@@ -73,7 +73,7 @@ A fully functional Django web application for managing library books, authors, a
    cp .env.example .env
    # Edit .env with your settings
    ```
-
+# This is cool
 3. **Run with Docker Compose**
    ```bash
    # Development
