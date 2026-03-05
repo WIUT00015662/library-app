@@ -205,16 +205,16 @@ A fully functional Django web application for managing library books, authors, a
 
 ### Home Page
 *Library home page with statistics and recent books*
-
+![Library home page with statistics and recent books](readme-images/image.png)
 ### Book List
 *Browse and filter books by category*
-
+![Book list page with category filtering](readme-images/image-1.png)
 ### Book Detail
 *View book details and borrow*
-
+![Book detail page with borrow option](readme-images/image-2.png)
 ### My Borrowings
 *Track borrowed books and return them*
-
+![My borrowings page showing borrowed books](readme-images/image-3.png)
 ## 🧪 Running Tests
 
 ```bash
@@ -242,6 +242,7 @@ library-management-system/
 │   └── views.py
 ├── library_project/          # Django project settings
 ├── nginx/                    # Nginx configuration
+├── readme-images/            # README screenshots
 ├── templates/                # HTML templates
 ├── static/                   # Static files
 ├── Dockerfile               # Multi-stage Docker build
