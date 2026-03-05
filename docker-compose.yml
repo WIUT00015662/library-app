@@ -3,6 +3,7 @@ version: '3.8'
 services:
   # Django Application
   web:
+    image: n1dovud/library-app:latest
     build:
       context: .
       dockerfile: Dockerfile
